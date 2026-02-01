@@ -2,76 +2,68 @@
 # coding: utf-8
 
 import click
-import pandas as pd
-from sqlalchemy import create_engine
+import duckdb
+import polars as pl
 from tqdm.auto import tqdm
 
-dtype = {
-    "VendorID": "Int64",
-    "passenger_count": "Int64",
-    "trip_distance": "float64",
-    "RatecodeID": "Int64",
-    "store_and_fwd_flag": "string",
-    "PULocationID": "Int64",
-    "DOLocationID": "Int64",
-    "payment_type": "Int64",
-    "fare_amount": "float64",
-    "extra": "float64",
-    "mta_tax": "float64",
-    "tip_amount": "float64",
-    "tolls_amount": "float64",
-    "improvement_surcharge": "float64",
-    "total_amount": "float64",
-    "congestion_surcharge": "float64"
+schema_overrides = {
+    "VendorID": pl.Int64,
+    "passenger_count": pl.Int64,
+    "trip_distance": pl.Float64,
+    "RatecodeID": pl.Int64,
+    "store_and_fwd_flag": pl.String,
+    "PULocationID": pl.Int64,
+    "DOLocationID": pl.Int64,
+    "payment_type": pl.Int64,
+    "fare_amount": pl.Float64,
+    "extra": pl.Float64,
+    "mta_tax": pl.Float64,
+    "tip_amount": pl.Float64,
+    "tolls_amount": pl.Float64,
+    "improvement_surcharge": pl.Float64,
+    "total_amount": pl.Float64,
+    "congestion_surcharge": pl.Float64,
+    "tpep_pickup_datetime": pl.Datetime("us"),
+    "tpep_dropoff_datetime": pl.Datetime("us"),
 }
-
-parse_dates = [
-    "tpep_pickup_datetime",
-    "tpep_dropoff_datetime"
-]
 
 
 @click.command()
-@click.option('--pg-user', default='root', help='PostgreSQL user')
-@click.option('--pg-pass', default='root', help='PostgreSQL password')
-@click.option('--pg-host', default='localhost', help='PostgreSQL host')
-@click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
-@click.option('--pg-db', default='ny_taxi', help='PostgreSQL database name')
+@click.option('--db-path', default='ny_taxi.duckdb', help='Path to DuckDB database file')
 @click.option('--year', default=2021, type=int, help='Year of the data')
 @click.option('--month', default=1, type=int, help='Month of the data')
 @click.option('--target-table', default='yellow_taxi_data', help='Target table name')
 @click.option('--chunksize', default=100000, type=int, help='Chunk size for reading CSV')
-def run(pg_user, pg_pass, pg_host, pg_port, pg_db, year, month, target_table, chunksize):
-    """Ingest NYC taxi data into PostgreSQL database."""
+def run(db_path, year, month, target_table, chunksize):
+    """Ingest NYC taxi data into DuckDB database."""
     prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow'
     url = f'{prefix}/yellow_tripdata_{year}-{month:02d}.csv.gz'
 
-    engine = create_engine(f'postgresql://{pg_user}:{pg_pass}@{pg_host}:{pg_port}/{pg_db}')
+    conn = duckdb.connect(db_path)
 
-    df_iter = pd.read_csv(
+    reader = pl.read_csv_batched(
         url,
-        dtype=dtype,
-        parse_dates=parse_dates,
-        iterator=True,
-        chunksize=chunksize,
+        schema_overrides=schema_overrides,
+        batch_size=chunksize,
     )
 
+    def chunk_iter():
+        while True:
+            batches = reader.next_batches(1)
+            if not batches:
+                return
+            yield batches[0]
+
     first = True
-
-    for df_chunk in tqdm(df_iter):
+    for df_chunk in tqdm(chunk_iter(), unit="chunk"):
+        conn.register("_chunk", df_chunk)
         if first:
-            df_chunk.head(0).to_sql(
-                name=target_table,
-                con=engine,
-                if_exists='replace'
-            )
+            conn.execute(f"CREATE OR REPLACE TABLE {target_table} AS SELECT * FROM _chunk LIMIT 0")
             first = False
+        conn.execute(f"INSERT INTO {target_table} SELECT * FROM _chunk")
 
-        df_chunk.to_sql(
-            name=target_table,
-            con=engine,
-            if_exists='append'
-        )
+    conn.close()
+
 
 if __name__ == '__main__':
     run()
