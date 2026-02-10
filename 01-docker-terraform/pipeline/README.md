@@ -43,7 +43,7 @@ uv run python ingest_data.py --year 2022 --month 3
 
 DuckDB est embarqué : pas de serveur à lancer. Vous pouvez :
 
-- Utiliser le notebook Marimo `notebook.py` (engine déjà configuré sur `ny_taxi.duckdb`)
+- Utiliser le notebook Marimo `upload_data.py` (engine déjà configuré sur `ny_taxi.duckdb`)
 - Ouvrir le fichier avec [DuckDB CLI](https://duckdb.org/docs/installation/) : `duckdb ny_taxi.duckdb`
 
 ## Notebook Marimo
@@ -53,7 +53,7 @@ Le projet utilise [Marimo](https://marimo.io/) à la place de Jupyter : notebook
 **Lancer le notebook :**
 
 ```bash
-uv run marimo edit notebook.py
+uv run marimo edit upload_data.py
 ```
 
 Une fenêtre du navigateur s’ouvre. Chaque modification de cellule déclenche automatiquement la réexécution des cellules qui en dépendent.
@@ -62,8 +62,8 @@ Une fenêtre du navigateur s’ouvre. Chaque modification de cellule déclenche 
 
 ```bash
 # Lancer en mode app (code masqué, interactif)
-uv run marimo run notebook.py
+uv run marimo run upload_data.py
 
 # Exécuter comme script Python
-uv run python notebook.py
+uv run python upload_data.py
 ```
