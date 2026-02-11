@@ -1,0 +1,12 @@
+services:
+  ingest:
+    build: .
+    volumes:
+      - ./data:/data
+    command:
+      - --db-path=/data/ny_taxi.duckdb
+      - --taxi-url=https://d37ci6vzurychx.cloudfront.net/trip-data/green_tripdata_2025-11.parquet
+      - --zones-url=https://github.com/DataTalksClub/nyc-tlc-data/releases/download/misc/taxi_zone_lookup.csv
+
+volumes:
+  duckdb-data:
