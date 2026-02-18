@@ -9,12 +9,19 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    # GCP authentication and configuration
+    GOOGLE_APPLICATION_CREDENTIALS: '/opt/airflow/keys/my-creds.json'
+    GCP_PROJECT_ID: 'plated-monolith-486816-j0'
+    GCP_DATASET: 'zoomcamp'
+    GCP_BUCKET_NAME: 'plated-monolith-486816-j0-zoomcamp'
+    GCP_LOCATION: 'europe-west2'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - ./config:/opt/airflow/config
     - ./data:/data  # your DuckDB data volume
+    - ./terraform/keys/my-creds.json:/opt/airflow/keys/my-creds.json:ro
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
     postgres:
