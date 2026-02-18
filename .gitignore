@@ -212,3 +212,7 @@ __marimo__/
 
 # Airflow
 logs/
+
+# Terraform
+terraform/keys/
+.terraform.lock.hcl
