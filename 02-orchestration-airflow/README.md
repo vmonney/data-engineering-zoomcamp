@@ -46,6 +46,58 @@ DuckDB est embarqué : pas de serveur à lancer. Vous pouvez :
 - Utiliser le notebook Marimo `upload_data.py` (engine déjà configuré sur `ny_taxi.duckdb`)
 - Ouvrir le fichier avec [DuckDB CLI](https://duckdb.org/docs/installation/) : `duckdb ny_taxi.duckdb`
 
+## Airflow (orchestration)
+
+Le projet utilise [Apache Airflow](https://airflow.apache.org/) pour orchestrer les pipelines de données, déployé via Docker Compose (LocalExecutor + PostgreSQL).
+
+### Prérequis
+
+- Docker & Docker Compose
+- Un fichier de credentials GCP à `terraform/keys/my-creds.json` (monté en lecture seule dans les conteneurs)
+
+### Structure
+
+| Répertoire / Fichier | Rôle |
+|---|---|
+| `dags/` | DAGs Airflow |
+| `logs/` | Logs d'exécution (créé automatiquement) |
+| `plugins/` | Plugins Airflow personnalisés |
+| `config/` | Configuration supplémentaire |
+| `data/` | Volume de données (DuckDB, fichiers intermédiaires) |
+| `.env` | Variables d'environnement (`AIRFLOW_UID`, credentials web) |
+
+### Lancer Airflow
+
+```bash
+cd 02-orchestration-airflow
+
+# 1. Initialiser la base de données et créer l'utilisateur admin
+docker compose up airflow-init
+
+# 2. Démarrer les services (webserver + scheduler)
+docker compose up -d
+```
+
+L'interface web est disponible sur **http://localhost:8080** (login par défaut : `airflow` / `airflow`).
+
+### Commandes utiles
+
+```bash
+# Voir les logs en temps réel
+docker compose logs -f
+
+# Arrêter tous les services
+docker compose down
+
+# Arrêter et supprimer les volumes (reset complet)
+docker compose down -v
+
+# Reconstruire l'image après modification du Dockerfile ou des dépendances
+docker compose build
+```
+
+---
+
 ## Notebook Marimo
 
 Le projet utilise [Marimo](https://marimo.io/) à la place de Jupyter : notebook réactif en Python pur (`.py`), compatible Git.
