@@ -216,3 +216,11 @@ logs/
 # Terraform
 terraform/keys/
 .terraform.lock.hcl
+
+# dbt
+.user.yml
+dbt_packages/
+
+
+# git stuff
+.gitkeep

@@ -1,0 +1,6 @@
+services:
+  dbt:
+    build: .
+    working_dir: /usr/src/app/taxi_rides_ny
+    volumes:
+      - ./taxi_rides_ny:/usr/src/app/taxi_rides_ny
