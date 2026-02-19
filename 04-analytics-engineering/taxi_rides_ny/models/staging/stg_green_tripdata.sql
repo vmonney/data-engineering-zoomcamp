@@ -11,7 +11,8 @@ renamed as (
         cast(dolocationid as integer) as dropoff_location_id,
 
         -- timestamps
-        cast(lpep_pickup_datetime as timestamp) as pickup_datetime,  -- lpep = Licensed Passenger Enhancement Program (green taxis)
+        -- lpep = Licensed Passenger Enhancement Program (green taxis)
+        cast(lpep_pickup_datetime as timestamp) as pickup_datetime,
         cast(lpep_dropoff_datetime as timestamp) as dropoff_datetime,
 
         -- trip info
@@ -39,5 +40,5 @@ select * from renamed
 
 -- Sample records for dev environment using deterministic date filter
 {% if target.name == 'dev' %}
-where pickup_datetime >= '2019-01-01' and pickup_datetime < '2019-02-01'
+    where pickup_datetime >= '2019-01-01' and pickup_datetime < '2019-02-01'
 {% endif %}

@@ -11,13 +11,15 @@ renamed as (
         cast(dolocationid as integer) as dropoff_location_id,
 
         -- timestamps (standardized naming)
-        cast(tpep_pickup_datetime as timestamp) as pickup_datetime,  -- tpep = Taxicab Passenger Enhancement Program (yellow taxis)
+        -- tpep = Taxicab Passenger Enhancement Program (yellow taxis)
+        cast(tpep_pickup_datetime as timestamp) as pickup_datetime,
         cast(tpep_dropoff_datetime as timestamp) as dropoff_datetime,
 
         -- trip info
         cast(store_and_fwd_flag as varchar) as store_and_fwd_flag,
         cast(passenger_count as integer) as passenger_count,
         cast(trip_distance as numeric) as trip_distance,
+        1 as trip_type, -- 1 = yellow taxis can only be street-hail (trip_type = 1)
 
         -- payment info
         cast(fare_amount as numeric) as fare_amount,
@@ -26,6 +28,7 @@ renamed as (
         cast(tip_amount as numeric) as tip_amount,
         cast(tolls_amount as numeric) as tolls_amount,
         cast(improvement_surcharge as numeric) as improvement_surcharge,
+        0 as ehail_fee, -- yellow taxis don't have ehail fees
         cast(total_amount as numeric) as total_amount,
         cast(payment_type as integer) as payment_type
 
@@ -38,5 +41,5 @@ select * from renamed
 
 -- Sample records for dev environment using deterministic date filter
 {% if target.name == 'dev' %}
-where pickup_datetime >= '2019-01-01' and pickup_datetime < '2019-02-01'
+    where pickup_datetime >= '2019-01-01' and pickup_datetime < '2019-02-01'
 {% endif %}
