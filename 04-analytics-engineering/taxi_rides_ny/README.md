@@ -1,15 +1,52 @@
-Welcome to your new dbt project!
+# taxi_rides_ny
 
-### Using the starter project
+dbt project for NYC taxi rides analytics (DuckDB).
 
-Try running the following commands:
-- dbt run
-- dbt test
+## Setup
 
+From the `04-analytics-engineering` directory:
 
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+```bash
+uv sync
+```
+
+## dbt commands
+
+```bash
+uv run dbt deps      # install dbt packages
+uv run dbt seed      # load seed CSV files
+uv run dbt run       # run all models
+uv run dbt test      # run tests
+```
+
+## SQLFluff linter
+
+The project includes a [SQLFluff](https://sqlfluff.com/) configuration (`.sqlfluff`) using the DuckDB dialect and the dbt templater.
+
+**Lint** (check for issues):
+
+```bash
+uv run sqlfluff lint models/
+```
+
+**Fix** (auto-fix issues):
+
+```bash
+uv run sqlfluff fix models/
+```
+
+You can also target a single file:
+
+```bash
+uv run sqlfluff lint models/staging/stg_green_tripdata.sql
+uv run sqlfluff fix models/staging/stg_green_tripdata.sql
+```
+
+> All commands must be run from the `taxi_rides_ny/` directory so SQLFluff picks up the `.sqlfluff` config.
+
+## Resources
+
+- [dbt documentation](https://docs.getdbt.com/docs/introduction)
+- [SQLFluff documentation](https://docs.sqlfluff.com/)
+- [dbt Discourse](https://discourse.getdbt.com/)
+- [dbt Community Slack](https://community.getdbt.com/)
